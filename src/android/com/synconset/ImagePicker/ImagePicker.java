@@ -11,10 +11,19 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.UUID;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.util.Log;
+import me.iwf.photopicker.PhotoPickUtils;
+import me.iwf.photopicker.PhotoPickerActivity;
+import me.iwf.photopicker.PhotoPicker;
+import me.iwf.photopicker.PhotoPreview;
+import me.iwf.photopicker.utils.PhotoPickerIntent;
+
+import com.mengran.shoubanjiang.Cache;
 
 public class ImagePicker extends CordovaPlugin {
 	public static String TAG = "ImagePicker";
@@ -26,47 +35,49 @@ public class ImagePicker extends CordovaPlugin {
 		 this.callbackContext = callbackContext;
 		 this.params = args.getJSONObject(0);
 		if (action.equals("getPictures")) {
-			Intent intent = new Intent(cordova.getActivity(), MultiImageChooserActivity.class);
-			int max = 20;
-			int desiredWidth = 0;
-			int desiredHeight = 0;
-			int quality = 100;
-			if (this.params.has("maxImages")) {
-				max = this.params.getInt("maxImages");
-			}
-			if (this.params.has("width")) {
-				desiredWidth = this.params.getInt("width");
-			}
-			if (this.params.has("height")) {
-				desiredWidth = this.params.getInt("height");
-			}
-			if (this.params.has("quality")) {
-				quality = this.params.getInt("quality");
-			}
-			intent.putExtra("MAX_IMAGES", max);
-			intent.putExtra("WIDTH", desiredWidth);
-			intent.putExtra("HEIGHT", desiredHeight);
-			intent.putExtra("QUALITY", quality);
+            int max = 20;
+            if (this.params.has("maxImages")) {
+             max = this.params.getInt("maxImages");
+            }
+			Intent intent = new Intent(cordova.getActivity(), PhotoPickerActivity.class);
+	        PhotoPickerIntent.setPhotoCount(intent, max);
+	        PhotoPickerIntent.setColumn(intent, 4);
 			if (this.cordova != null) {
-				this.cordova.startActivityForResult((CordovaPlugin) this, intent, 0);
+				this.cordova.startActivityForResult((CordovaPlugin) this, intent, PhotoPicker.REQUEST_CODE);
 			}
 		}
 		return true;
 	}
 
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (resultCode == Activity.RESULT_OK && data != null) {
-			ArrayList<String> fileNames = data.getStringArrayListExtra("MULTIPLEFILENAMES");
-			JSONArray res = new JSONArray(fileNames);
-			this.callbackContext.success(res);
-		} else if (resultCode == Activity.RESULT_CANCELED && data != null) {
-			String error = data.getStringExtra("ERRORMESSAGE");
-			this.callbackContext.error(error);
-		} else if (resultCode == Activity.RESULT_CANCELED) {
-			JSONArray res = new JSONArray();
-			this.callbackContext.success(res);
-		} else {
-			this.callbackContext.error("No images selected");
-		}
+		if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == PhotoPicker.REQUEST_CODE) {//第一次，选择图片后返回
+                if (data != null) {
+                    ArrayList<String> photos = data.getStringArrayListExtra(PhotoPicker.KEY_SELECTED_PHOTOS);
+                    // ArrayList<String> photosList = new ArrayList<String>();
+                    // Iterator<String> it = photos.iterator();
+                    // while (it.hasNext()) {
+                    //     String uuid = "/" + UUID.randomUUID().toString();
+                    //     Cache.getInstance().images.put(uuid, it.next());
+                    //     photosList.add(uuid);
+                    // }
+                    JSONArray res = new JSONArray(photos);
+                    this.callbackContext.success(res);
+                } else {
+                    this.callbackContext.error("选择图片失败");
+                }
+            } else if (requestCode == PhotoPreview.REQUEST_CODE){//如果是预览与删除后返回
+                if (data != null) {
+                    ArrayList<String> photos = data.getStringArrayListExtra(PhotoPicker.KEY_SELECTED_PHOTOS);
+                }
+                this.callbackContext.error("选择图片之后点击完成确认操作！");
+            }
+        } else {
+
+            if (requestCode == PhotoPicker.REQUEST_CODE){
+                JSONArray res = new JSONArray();
+                this.callbackContext.success(res);
+            }
+        }
 	}
 }
