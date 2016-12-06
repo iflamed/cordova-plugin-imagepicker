@@ -67,7 +67,10 @@ plugins.imagePicker.getPictures(
 The plugin returns images that are stored in a temporary directory.  These images will often not be deleted automatically though.  The files should be moved or deleted after you get their filepaths in javascript.
 
 ## Libraries used
-
+#### Android
+compile 'com.github.glassLake:PhotoPicker:1.0.2'
+compile 'id.zelory:compressor:1.0.2'
+compile 'io.reactivex:rxandroid:1.2.1'
 #### QBImagePicker
 
 For iOS this plugin uses the QBImagePicker
