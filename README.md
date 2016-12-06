@@ -69,7 +69,9 @@ The plugin returns images that are stored in a temporary directory.  These image
 ## Libraries used
 #### Android
 compile 'com.github.glassLake:PhotoPicker:1.0.2'
+
 compile 'id.zelory:compressor:1.0.2'
+
 compile 'io.reactivex:rxandroid:1.2.1'
 #### QBImagePicker
 
